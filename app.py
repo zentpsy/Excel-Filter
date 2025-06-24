@@ -65,6 +65,12 @@ if selected_year != "ทั้งหมด":
 if "ทั้งหมด" not in selected_departments:
     filtered_df = filtered_df[filtered_df["หน่วยงาน"].isin(selected_departments)]
 
+# --- แสดงจำนวนหรือแจ้งเตือน
+if not filtered_df.empty:
+    st.info(f"📈 พบข้อมูลทั้งหมด {len(filtered_df)} รายการ")
+else:
+    st.warning("⚠️ ไม่พบข้อมูลที่ตรงกับเงื่อนไขที่เลือก")
+
 # --- แสดงผล
 st.markdown("### 📄 ตารางข้อมูล")
 st.dataframe(filtered_df, use_container_width=True)
