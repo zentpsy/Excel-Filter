@@ -6,7 +6,7 @@ import re
 
 st.set_page_config(page_title="Excel Filter App", layout="wide")
 
-st.title("📊 Website กรองข้อมูล"งบประมาน"จากExcel")
+st.title("📊 Website กรองข้อมูล-งบประมาน จากExcel")
 
 # โหลดข้อมูล
 file_path = os.path.join("data", "all_budget.xlsx")
