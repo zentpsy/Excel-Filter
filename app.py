@@ -1,46 +1,54 @@
 import streamlit as st
 import pandas as pd
-import re
+import os
 from io import BytesIO
+import re
 
-st.set_page_config(page_title="Excel Filter", layout="wide")
+st.set_page_config(page_title="Excel Filter App", layout="wide")
+
+st.title("📊 โปรแกรมกรองข้อมูล Excel")
 
 # โหลดข้อมูล
-excel_path = "data/all_budget.xlsx"
-try:
-    df = pd.read_excel(excel_path)
-except FileNotFoundError:
-    st.error(f"❌ ไม่พบไฟล์ {excel_path} กรุณาวางไฟล์ในโฟลเดอร์ data/")
+file_path = os.path.join("data", "all_budget.xlsx")
+if not os.path.exists(file_path):
+    st.error("ไม่พบไฟล์ data/all_budget.xlsx กรุณาวางไฟล์ไว้ในโฟลเดอร์ data/")
     st.stop()
 
-st.title("📊 ระบบกรองข้อมูลจาก Excel")
+df = pd.read_excel(file_path)
 
-# --- ฟังก์ชันสำหรับเรียงลำดับตัวเลขในหน่วยงาน
-def extract_number(text):
-    match = re.search(r'\d+', str(text))
-    if match:
-        return int(match.group())
-    return 9999
+# ตรวจสอบคอลัมน์
+required_columns = ["ลำดับ", "โครงการ", "รูปแบบงบประมาณ", "ปีงบประมาณ", "หน่วยงาน", 
+                    "สถานที่", "หมู่ที่", "ตำบล", "อำเภอ", "จังหวัด"]
+if not all(col in df.columns for col in required_columns):
+    st.error("ไฟล์ Excel ไม่มีคอลัมน์ที่ต้องการ")
+    st.stop()
 
-# --- ฟิลเตอร์
+# --- สร้าง filter dropdown
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    project_options = ["ทั้งหมด"] + sorted(df["โครงการ"].dropna().unique().tolist())
-    selected_project = st.selectbox("🎯 โครงการ", project_options)
+    project_options = df["โครงการ"].dropna().unique().tolist()
+    project_options.sort()
+    selected_project = st.selectbox("📌 โครงการ", ["ทั้งหมด"] + project_options)
 
 with col2:
-    budget_options = ["ทั้งหมด"] + sorted(df["รูปแบบงบประมาณ"].dropna().unique().tolist())
-    selected_budget = st.selectbox("💰 รูปแบบงบประมาณ", budget_options)
+    budget_options = df["รูปแบบงบประมาณ"].dropna().unique().tolist()
+    budget_options.sort()
+    selected_budget = st.selectbox("💰 รูปแบบงบประมาณ", ["ทั้งหมด"] + budget_options)
 
 with col3:
-    year_options = ["ทั้งหมด"] + sorted(df["ปีงบประมาณ"].dropna().unique())
-    selected_year = st.selectbox("📅 ปีงบประมาณ", year_options)
+    year_options = df["ปีงบประมาณ"].dropna().unique().tolist()
+    year_options = sorted(year_options)
+    selected_year = st.selectbox("📅 ปีงบประมาณ", ["ทั้งหมด"] + [str(y) for y in year_options])
+
+def extract_number(s):
+    match = re.search(r"\d+", str(s))
+    return int(match.group()) if match else float('inf')
 
 with col4:
     department_options = df["หน่วยงาน"].dropna().unique().tolist()
     department_options_sorted = ["ทั้งหมด"] + sorted(department_options, key=extract_number)
-    selected_department = st.selectbox("🏢 หน่วยงาน", department_options_sorted)
+    selected_departments = st.multiselect("🏢 หน่วยงาน", department_options_sorted, default=["ทั้งหมด"])
 
 # --- กรองข้อมูล
 filtered_df = df.copy()
@@ -52,15 +60,16 @@ if selected_budget != "ทั้งหมด":
     filtered_df = filtered_df[filtered_df["รูปแบบงบประมาณ"] == selected_budget]
 
 if selected_year != "ทั้งหมด":
-    filtered_df = filtered_df[filtered_df["ปีงบประมาณ"] == selected_year]
+    filtered_df = filtered_df[filtered_df["ปีงบประมาณ"].astype(str) == selected_year]
 
-if selected_department != "ทั้งหมด":
-    filtered_df = filtered_df[filtered_df["หน่วยงาน"] == selected_department]
+if "ทั้งหมด" not in selected_departments:
+    filtered_df = filtered_df[filtered_df["หน่วยงาน"].isin(selected_departments)]
 
-st.markdown(f"🔎 พบข้อมูลทั้งหมด {len(filtered_df)} รายการ")
+# --- แสดงผล
+st.markdown("### 📄 ตารางข้อมูล")
 st.dataframe(filtered_df, use_container_width=True)
 
-# --- Export Excel
+# --- Export เป็น Excel
 def to_excel_bytes(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
