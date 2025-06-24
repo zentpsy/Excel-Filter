@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import re
 
 st.set_page_config(page_title="ข้อมูลโครงการ", layout="wide")
 st.title("📊 แสดงข้อมูลโครงการจาก Excel พร้อมฟิลเตอร์")
@@ -25,21 +26,26 @@ if os.path.exists(excel_file_path):
                 selected_budget = st.selectbox("💰 เลือกรูปแบบงบประมาณ", ["ทั้งหมด"] + sorted(df["รูปแบบงบประมาณ"].dropna().unique()))
             with col2:
                 selected_year = st.selectbox("📅 เลือกปีงบประมาณ", ["ทั้งหมด"] + sorted(df["ปีงบประมาณ"].dropna().unique()))
-                depts = df["หน่วยงาน"].dropna().unique().tolist()
-                numeric_depts = []
-                text_depts = []
-                for d in depts:
-                    try:
-                        numeric_depts.append((float(str(d)), d))
-                    except:
-                        text_depts.append(d)
-                numeric_depts.sort()
-                text_depts.sort()
-                sorted_depts = [d[1] for d in numeric_depts] + text_depts
+                
+                # ดึงค่า unique จากหน่วยงาน
+                all_departments = df["หน่วยงาน"].dropna().unique().tolist()
 
+                # ฟังก์ชันดึงเลขจากข้อความ เช่น "สทบ. เขต 1" -> 1
+                def extract_number(text):
+                    match = re.search(r'\d+', str(text))
+                    if match:
+                        return int(match.group())
+                    return 9999  # ถ้าไม่มีเลข ให้ไปหลังสุด
+                
+                # เรียงลำดับตามเลขที่ดึงได้
+                all_departments_sorted = sorted(all_departments, key=extract_number)
+                
+                # เพิ่ม "ทั้งหมด" ไว้บนสุด
+                all_departments_sorted = ["ทั้งหมด"] + all_departments_sorted
+                
                 selected_departments = st.multiselect(
                     "📍 เลือกหน่วยงาน (เลือกได้หลายค่า)",
-                    ["ทั้งหมด"] + sorted_depts,
+                    all_departments_sorted,
                     default=["ทั้งหมด"]
                 )
 
