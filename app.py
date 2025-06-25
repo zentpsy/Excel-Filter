@@ -6,7 +6,7 @@ import re
 
 st.set_page_config(page_title="Excel Filter App", layout="wide")
 
-st.title("📊 Website กรองข้อมูล - งบประมาณ")
+st.title("📊 Website ข้อมูล - งบประมาณ ปี 2561-2568")
 
 # โหลดข้อมูล
 file_path = os.path.join("data", "all_budget.xlsx")
