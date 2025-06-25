@@ -106,7 +106,7 @@ if "ทั้งหมด" not in selected_departments:
 # แสดงจำนวนหรือแจ้งเตือน
 if not filtered_df.empty:
     st.markdown(
-        f"<div style='font-size:24px; color:#3c763d; background-color:#dff0d8; padding:10px; border-radius:6px;'>📈 พบข้อมูลทั้งหมด {len(filtered_df)} รายการ</div>",
+        f"<div style='font-size:24px; color:#3c763d; background-color:#c3ddfa; padding:10px; border-radius:6px;'>📈 พบข้อมูลทั้งหมด {len(filtered_df)} แห่ง</div>",
         unsafe_allow_html=True
     )
 else:
