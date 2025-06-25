@@ -105,9 +105,17 @@ if "ทั้งหมด" not in selected_departments:
 
 # แสดงจำนวนหรือแจ้งเตือน
 if not filtered_df.empty:
-    st.info(f"📈 พบข้อมูลทั้งหมด {len(filtered_df)} รายการ")
+    st.markdown(
+        f"<div style='font-size:24px; color:#3c763d; background-color:#dff0d8; padding:10px; border-radius:6px;'>📈 พบข้อมูลทั้งหมด {len(filtered_df)} รายการ</div>",
+        unsafe_allow_html=True
+    )
 else:
-    st.warning("⚠️ ไม่พบข้อมูลที่ตรงกับเงื่อนไขที่เลือก")
+    st.markdown(
+        "<div style='font-size:24px; color:#8a6d3b; background-color:#fcf8e3; padding:10px; border-radius:6px;'>⚠️ ไม่พบข้อมูลที่ตรงกับเงื่อนไขที่เลือก</div>",
+        unsafe_allow_html=True
+    )
+
+
 
 # แสดงตาราง
 st.markdown("### 📄 ตารางข้อมูล")
